@@ -3,6 +3,8 @@
 Um pacote Flutter poderoso e flexível para busca profunda em estruturas JSON. Este pacote fornece recursos avançados de busca, incluindo correspondência por regex, filtragem por tipo e buscas direcionadas em chaves/valores.
 
 [![pub package](https://img.shields.io/pub/v/flutter_json_deep_search.svg)](https://pub.dev/packages/flutter_json_deep_search)
+[![codecov](https://codecov.io/gh/willianmattos/flutter_json_deep_search/branch/main/graph/badge.svg)](https://codecov.io/gh/willianmattos/flutter_json_deep_search)
+[![Tests](https://github.com/willianmattos/flutter_json_deep_search/actions/workflows/test.yml/badge.svg)](https://github.com/willianmattos/flutter_json_deep_search/actions/workflows/test.yml)
 
 *Read this in other languages: [English](README.md), [Português](README.pt-BR.md)*
 
