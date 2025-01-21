@@ -1,0 +1,22 @@
+name: flutter_json_deep_search
+description: "A powerful and flexible Flutter package for deep searching within JSON data structures."
+version: 0.0.1
+homepage:
+  url: https://github.com/your-repo/flutter_json_deep_search
+  type: git
+  path: https://github.com/your-repo/flutter_json_deep_search.git
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
