@@ -17,6 +17,8 @@ A powerful and flexible Flutter package for deep searching within JSON data stru
 
 [![pub package](https://img.shields.io/pub/v/flutter_json_deep_search.svg)](https://pub.dev/packages/flutter_json_deep_search)
 
+*Read this in other languages: [English](README.md), [Português](README.pt-BR.md)*
+
 ## Features
 
 - 🔍 Deep search in nested JSON structures
@@ -26,6 +28,8 @@ A powerful and flexible Flutter package for deep searching within JSON data stru
 - 🎮 Flexible search targeting (keys only, values only, or both)
 - 💪 Case-sensitive and exact match options
 - 🌳 Smart nested object search
+- 🔤 Diacritic-insensitive search (accent support)
+- 🛠️ Path analysis helpers
 - 🛡️ Null-safe
 
 ## Installation
@@ -57,6 +61,16 @@ final results = JsonDeepSearch.search(jsonData, 'name');
 ```
 
 ### Advanced Search Options
+
+#### Diacritic-Insensitive Search (Accent Support)
+```dart
+// Will find both "São Paulo" and "Sao Paulo"
+final results = JsonDeepSearch.search(
+  jsonData,
+  'Sao Paulo',
+  ignoreDiacritics: true,
+);
+```
 
 #### Regex Search
 ```dart
@@ -95,23 +109,6 @@ final valueResults = JsonDeepSearch.search(
 );
 ```
 
-#### Case Sensitivity and Exact Matching
-```dart
-// Case-sensitive search
-final caseSensitiveResults = JsonDeepSearch.search(
-  jsonData,
-  'Name',
-  caseSensitive: true,
-);
-
-// Exact match search
-final exactResults = JsonDeepSearch.search(
-  jsonData,
-  'John',
-  exactMatch: true,
-);
-```
-
 #### Nested Object Search
 ```dart
 final userData = {
@@ -137,13 +134,34 @@ final results = JsonDeepSearch.search(
 );
 ```
 
+### Working with Search Results
+
+SearchResult provides helpful methods for analyzing the results:
+
+```dart
+final result = results.first;
+
+// Check if path contains specific key
+if (result.hasInPath('profile')) {
+  print('Found in profile section');
+}
+
+// Find specific element in path
+final username = result.findInPath((segment) => segment == 'username');
+
+// Custom path pattern matching
+final isUserData = result.matchesPattern(
+  (path) => path.contains('users') && path.contains('profile')
+);
+```
+
 ## Search Result Structure
 
 Each search result includes:
 - `path`: List of strings representing the path to the match
 - `key`: The key where the match was found
 - `value`: The value associated with the match
-- `matchType`: Whether the match was found in a key or value (MatchType.key or MatchType.value)
+- `matchType`: Whether the match was found in a key, value, or nested value
 
 ```dart
 SearchResult(
@@ -165,6 +183,7 @@ static List<SearchResult> search(
   bool caseSensitive = false,
   bool exactMatch = false,
   bool useRegex = false,
+  bool ignoreDiacritics = false,
   Set<Type>? allowedTypes,
   SearchTarget searchTarget = SearchTarget.both,
   Map<String, String>? nestedSearch,
@@ -180,6 +199,7 @@ static List<SearchResult> search(
 | caseSensitive | bool | false | Whether the search should be case-sensitive |
 | exactMatch | bool | false | Whether to match the entire string exactly |
 | useRegex | bool | false | Whether to treat the query as a regular expression |
+| ignoreDiacritics | bool | false | Whether to ignore accents in search |
 | allowedTypes | Set<Type>? | null | Set of types to filter values by |
 | searchTarget | SearchTarget | SearchTarget.both | Where to search (keys, values, or both) |
 | nestedSearch | Map<String, String>? | null | Map of object keys to their searchable fields |
@@ -202,47 +222,43 @@ Enum indicating whether a match was found in a key or value:
 
 ```dart
 enum MatchType {
-  key,    // Match found in a key
-  value   // Match found in a value
+  key,         // Match found in a key
+  value,       // Match found in a value
+  nestedValue  // Match found in a nested field
 }
 ```
 
 ## Examples
 
-### Complex Nested Search
+### Complex Nested Search with Accents
 ```dart
-final complexJson = {
-  'users': [
+final locationData = {
+  'locations': [
     {
       'id': 1,
-      'email': 'john@example.com',
-      'preferences': {
-        'theme': 'dark',
-        'notifications': true
+      'city': {
+        'name': 'São Paulo',
+        'info': {'population': 12000000}
       }
     }
   ]
 };
 
-// Find all email addresses
-final emailResults = JsonDeepSearch.search(
-  complexJson,
-  r'.*@.*\.com',
-  useRegex: true,
+// Find cities ignoring accents
+final results = JsonDeepSearch.search(
+  locationData,
+  'Sao',
+  ignoreDiacritics: true,
   searchTarget: SearchTarget.valuesOnly,
-);
-
-// Find all boolean values
-final boolResults = JsonDeepSearch.search(
-  complexJson,
-  'true',
-  allowedTypes: {bool},
+  nestedSearch: {
+    'city': 'name',
+  },
 );
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. Check our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## License
 
