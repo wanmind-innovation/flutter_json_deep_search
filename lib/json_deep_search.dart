@@ -10,6 +10,7 @@ class JsonDeepSearch {
     bool caseSensitive = false,
     bool exactMatch = false,
     bool useRegex = false,
+    bool ignoreDiacritics = false,
     Set<Type>? allowedTypes,
     SearchTarget searchTarget = SearchTarget.both,
     Map<String, String>? nestedSearch,
@@ -23,6 +24,7 @@ class JsonDeepSearch {
       caseSensitive: caseSensitive,
       exactMatch: exactMatch,
       useRegex: useRegex,
+      ignoreDiacritics: ignoreDiacritics,
       allowedTypes: allowedTypes,
       searchTarget: searchTarget,
       nestedSearch: nestedSearch,
@@ -39,6 +41,7 @@ class JsonDeepSearch {
     bool caseSensitive = false,
     bool exactMatch = false,
     bool useRegex = false,
+    bool ignoreDiacritics = false,
     Set<Type>? allowedTypes,
     SearchTarget searchTarget = SearchTarget.both,
     Map<String, String>? nestedSearch,
@@ -55,7 +58,8 @@ class JsonDeepSearch {
           if (_matchesQuery(nestedValue.toString(), query,
               caseSensitive: caseSensitive,
               exactMatch: exactMatch,
-              useRegex: useRegex)) {
+              useRegex: useRegex,
+              ignoreDiacritics: ignoreDiacritics)) {
             results.add(SearchResult(
               path: [...currentPath, searchField],
               key: searchField,
@@ -63,7 +67,7 @@ class JsonDeepSearch {
               matchType: MatchType.nestedValue,
             ));
           }
-          return; // Skip further processing for this object
+          return;
         }
       }
     }
@@ -76,7 +80,8 @@ class JsonDeepSearch {
             _matchesQuery(key.toString(), query,
                 caseSensitive: caseSensitive,
                 exactMatch: exactMatch,
-                useRegex: useRegex)) {
+                useRegex: useRegex,
+                ignoreDiacritics: ignoreDiacritics)) {
           results.add(SearchResult(
             path: [...currentPath, key.toString()],
             key: key.toString(),
@@ -94,6 +99,7 @@ class JsonDeepSearch {
           caseSensitive: caseSensitive,
           exactMatch: exactMatch,
           useRegex: useRegex,
+          ignoreDiacritics: ignoreDiacritics,
           allowedTypes: allowedTypes,
           searchTarget: searchTarget,
           nestedSearch: nestedSearch,
@@ -110,13 +116,14 @@ class JsonDeepSearch {
           caseSensitive: caseSensitive,
           exactMatch: exactMatch,
           useRegex: useRegex,
+          ignoreDiacritics: ignoreDiacritics,
           allowedTypes: allowedTypes,
           searchTarget: searchTarget,
           nestedSearch: nestedSearch,
         );
       }
     } else {
-      // Handle primitive values (String, num, bool)
+      // Handle primitive values
       if (allowedTypes != null && !allowedTypes.contains(data.runtimeType)) {
         return;
       }
@@ -126,7 +133,8 @@ class JsonDeepSearch {
         if (_matchesQuery(stringValue, query,
             caseSensitive: caseSensitive,
             exactMatch: exactMatch,
-            useRegex: useRegex)) {
+            useRegex: useRegex,
+            ignoreDiacritics: ignoreDiacritics)) {
           results.add(SearchResult(
             path: currentPath,
             key: currentPath.isEmpty ? '' : currentPath.last,
@@ -145,7 +153,13 @@ class JsonDeepSearch {
     bool caseSensitive = false,
     bool exactMatch = false,
     bool useRegex = false,
+    bool ignoreDiacritics = false,
   }) {
+    if (ignoreDiacritics) {
+      text = _removeDiacritics(text);
+      query = _removeDiacritics(query);
+    }
+
     if (!caseSensitive) {
       text = text.toLowerCase();
       query = query.toLowerCase();
@@ -164,6 +178,19 @@ class JsonDeepSearch {
       return text == query;
     }
     return text.contains(query);
+  }
+
+  /// Removes diacritics (accents) from a string
+  static String _removeDiacritics(String str) {
+    var withDia =
+        'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+    var withoutDia =
+        'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
+
+    for (int i = 0; i < withDia.length; i++) {
+      str = str.replaceAll(withDia[i], withoutDia[i]);
+    }
+    return str;
   }
 }
 
@@ -186,6 +213,18 @@ class SearchResult {
     required this.value,
     required this.matchType,
   });
+
+  /// Check if the path contains a specific key
+  bool hasInPath(String key) => path.contains(key);
+
+  /// Check if the path matches a specific pattern using a callback
+  bool matchesPattern(bool Function(List<String> path) matcher) =>
+      matcher(path);
+
+  /// Get the last segment of the path that matches a condition
+  String? findInPath(bool Function(String segment) condition) {
+    return path.lastWhere((segment) => condition(segment), orElse: () => '');
+  }
 
   @override
   bool operator ==(Object other) {

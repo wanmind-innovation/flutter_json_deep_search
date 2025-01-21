@@ -1,0 +1,24 @@
+name: flutter_json_deep_search_example
+publish_to: 'none' 
+description: "Example for flutter_json_deep_search"
+version: 0.0.1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_json_deep_search:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/cidades-estados.json
