@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Repository URL update
+* Example path configuration fix
+
 ## 1.0.0
 
 * Initial release
